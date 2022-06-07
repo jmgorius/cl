@@ -183,9 +183,9 @@ void cl_parse(int argc, char **restrict argv, const cl_interface_desc *desc) {
                      option->long_name);
         if (option->type == CL_VALUE) {
           if (value)
-            parse_option_value(program_name, option->storage, value);
+            *option->storage = value;
           else if (idx + 1 < argc)
-            parse_option_value(program_name, option->storage, argv[++idx]);
+            *option->storage = argv[++idx];
           else
             error_exit(program_name, "Missing option value for --%s",
                        option->long_name);
@@ -207,7 +207,7 @@ void cl_parse(int argc, char **restrict argv, const cl_interface_desc *desc) {
         options += strlen(option->short_name);
         if (option->type == CL_VALUE) {
           if ((options == argv[idx] + len) && (idx + 1 < argc))
-            parse_option_value(program_name, option->storage, argv[++idx]);
+            *option->storage = argv[++idx];
           else
             error_exit(program_name, "Missing option value for -%s",
                        option->short_name);
