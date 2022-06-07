@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define STRINGIFY_IMPL(x) #x
 #define STRINGIFY(x) STRINGIFY_IMPL(x)
@@ -42,7 +43,10 @@ static void error_exit(const char *restrict program_name,
                        const char *restrict fmt, ...) {
   va_list args;
   va_start(args, fmt);
-  fprintf(stderr, "\033[31merror\033[0m: ");
+  if (isatty(STDERR_FILENO))
+    fprintf(stderr, "\033[31merror\033[0m: ");
+  else
+    fprintf(stderr, "error: ");
   vfprintf(stderr, fmt, args);
   va_end(args);
 
