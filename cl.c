@@ -30,7 +30,7 @@
 
 static const char *set_constant = "set";
 
-static const cl_opt help_opt = (cl_opt){
+static const cl_opt help_opt = {
     .short_name = "h",
     .long_name = "help",
     .description = "Print this help message and exit",
