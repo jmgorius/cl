@@ -37,7 +37,7 @@ typedef struct cl_interface_desc {
   size_t num_positional_args;
 } cl_interface_desc;
 
-void cl_parse(int argc, char **__restrict argv, const cl_interface_desc *desc);
+void cl_parse(int argc, char **restrict argv, const cl_interface_desc *desc);
 void cl_print_help(const cl_interface_desc *desc);
 
 #endif /* INCLUDED_CL_H */
