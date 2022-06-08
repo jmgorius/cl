@@ -155,14 +155,6 @@ static const cl_opt *get_short_option(const cl_interface_desc *desc,
   return 0;
 }
 
-static void parse_option_value(const char *restrict program_name,
-                               const char **restrict storage,
-                               const char *argv_str) {
-  if (is_dash_dash(argv_str) || is_short_opt(argv_str) || is_long_opt(argv_str))
-    error_exit(program_name, "Expected option value, but got %s", argv_str);
-  *storage = argv_str;
-}
-
 void cl_parse(int argc, char **restrict argv, const cl_interface_desc *desc) {
   const char *program_name = argv[0];
   /* Ignore the program name */
@@ -184,7 +176,7 @@ void cl_parse(int argc, char **restrict argv, const cl_interface_desc *desc) {
         if (option->type == CL_VALUE) {
           if (value)
             *option->storage = value;
-          else if (idx + 1 < argc)
+          else if (idx + 1 < argc && !is_dash_dash(argv[idx + 1]))
             *option->storage = argv[++idx];
           else
             error_exit(program_name, "Missing option value for --%s",
