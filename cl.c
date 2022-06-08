@@ -141,13 +141,13 @@ static const cl_opt *get_short_option(const cl_interface_desc *desc,
                                       const char *restrict argv_str) {
   for (size_t i = 0; i < desc->num_opts; ++i) {
     if (desc->opts[i].short_name) {
-      size_t n = strlen(desc->opts[i].short_name);
-      if (strncmp(desc->opts[i].short_name, argv_str, n) == 0)
+      assert(strlen(desc->opts[i].short_name) == 1);
+      if (desc->opts[i].short_name[0] == argv_str[0])
         return &desc->opts[i];
     }
   }
 
-  if (strcmp(help_opt.short_name, argv_str) == 0) {
+  if (help_opt.short_name[0] == argv_str[0]) {
     cl_print_help(desc);
     exit(0);
   }
@@ -198,7 +198,12 @@ void cl_parse(int argc, char **restrict argv, const cl_interface_desc *desc) {
           error_exit(program_name, "Unknown option %s", argv[idx]);
         options += strlen(option->short_name);
         if (option->type == CL_VALUE) {
-          if ((options == argv[idx] + len) && (idx + 1 < argc))
+          if (options != argv[idx] + len) {
+            /* Option and argument are grouped */
+            *option->storage = options;
+            break;
+          }
+          else if (idx + 1 < argc && !is_dash_dash(argv[idx + 1]))
             *option->storage = argv[++idx];
           else
             error_exit(program_name, "Missing option value for -%s",
