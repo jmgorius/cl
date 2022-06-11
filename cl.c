@@ -29,9 +29,9 @@
 #define STRINGIFY_IMPL(x) #x
 #define STRINGIFY(x) STRINGIFY_IMPL(x)
 
-static const char *set_constant = "set";
+static const char *cl_set_constant = "set";
 
-static const cl_opt help_opt = {
+static const cl_opt cl_help_opt = {
     .short_name = "h",
     .long_name = "help",
     .description = "Print this help message and exit",
@@ -39,8 +39,8 @@ static const cl_opt help_opt = {
 
 NORETURN
 PRINTF_FORMAT(2, 3)
-static void error_exit(const char *restrict program_name,
-                       const char *restrict fmt, ...) {
+static void cl_error_exit(const char *restrict program_name,
+                          const char *restrict fmt, ...) {
   va_list args;
   va_start(args, fmt);
   if (isatty(STDERR_FILENO))
@@ -54,7 +54,7 @@ static void error_exit(const char *restrict program_name,
   exit(1);
 }
 
-static void print_opt(const cl_opt *opt) {
+static void cl_print_opt(const cl_opt *opt) {
   int print_size = 0;
   bool is_value = opt->type == CL_VALUE;
   printf("  %s%s%s%s%s%s%s%s%s %n", opt->short_name ? "-" : " ",
@@ -94,28 +94,28 @@ void cl_print_help(const cl_interface_desc *desc) {
   if (desc->num_opts > 0) {
     puts("\nOPTIONS:");
 
-    print_opt(&help_opt);
+    cl_print_opt(&cl_help_opt);
     for (size_t i = 0; i < desc->num_opts; ++i)
-      print_opt(&desc->opts[i]);
+      cl_print_opt(&desc->opts[i]);
   }
 
   if (desc->help_footer)
     printf("\n%s\n", desc->help_footer);
 }
 
-static bool is_dash_dash(const char *s) {
+static bool cl_is_dash_dash(const char *s) {
   return s[0] == '-' && s[1] == '-' && s[2] == '\0';
 }
-static bool is_short_opt(const char *s) {
+static bool cl_is_short_opt(const char *s) {
   return s[0] == '-' && s[1] != '-' && s[1] != '\0';
 }
-static bool is_long_opt(const char *s) {
+static bool cl_is_long_opt(const char *s) {
   return s[0] == '-' && s[1] == '-' && s[2] != '-' && s[2] != '\0';
 }
 
-static const cl_opt *get_long_option(const cl_interface_desc *desc,
-                                     const char *restrict argv_str,
-                                     const char **restrict value) {
+static const cl_opt *cl_get_long_option(const cl_interface_desc *desc,
+                                        const char *restrict argv_str,
+                                        const char **restrict value) {
   for (size_t i = 0; i < desc->num_opts; ++i) {
     if (desc->opts[i].long_name) {
       size_t n = strlen(desc->opts[i].long_name);
@@ -129,7 +129,7 @@ static const cl_opt *get_long_option(const cl_interface_desc *desc,
     }
   }
 
-  if (strcmp(help_opt.long_name, argv_str) == 0) {
+  if (strcmp(cl_help_opt.long_name, argv_str) == 0) {
     cl_print_help(desc);
     exit(0);
   }
@@ -137,8 +137,8 @@ static const cl_opt *get_long_option(const cl_interface_desc *desc,
   return 0;
 }
 
-static const cl_opt *get_short_option(const cl_interface_desc *desc,
-                                      const char *restrict argv_str) {
+static const cl_opt *cl_get_short_option(const cl_interface_desc *desc,
+                                         const char *restrict argv_str) {
   for (size_t i = 0; i < desc->num_opts; ++i) {
     if (desc->opts[i].short_name) {
       assert(strlen(desc->opts[i].short_name) == 1);
@@ -147,7 +147,7 @@ static const cl_opt *get_short_option(const cl_interface_desc *desc,
     }
   }
 
-  if (help_opt.short_name[0] == argv_str[0]) {
+  if (cl_help_opt.short_name[0] == argv_str[0]) {
     cl_print_help(desc);
     exit(0);
   }
@@ -160,58 +160,57 @@ void cl_parse(int argc, char **restrict argv, const cl_interface_desc *desc) {
   /* Ignore the program name */
   int idx = 1;
   while (idx < argc) {
-    if (is_dash_dash(argv[idx])) {
+    if (cl_is_dash_dash(argv[idx])) {
       idx += 1;
       break;
     }
-    if (is_long_opt(argv[idx])) {
+    if (cl_is_long_opt(argv[idx])) {
       const char *value = 0;
-      const cl_opt *option = get_long_option(desc, argv[idx] + 2, &value);
+      const cl_opt *option = cl_get_long_option(desc, argv[idx] + 2, &value);
       if (!option) {
-        error_exit(program_name, "Unknown option %s", argv[idx]);
+        cl_error_exit(program_name, "Unknown option %s", argv[idx]);
       } else {
         if ((option->type != CL_VALUE) && value)
-          error_exit(program_name, "Unexpected value for option --%s",
-                     option->long_name);
+          cl_error_exit(program_name, "Unexpected value for option --%s",
+                        option->long_name);
         if (option->type == CL_VALUE) {
           if (value)
             *option->storage = value;
-          else if (idx + 1 < argc && !is_dash_dash(argv[idx + 1]))
+          else if (idx + 1 < argc && !cl_is_dash_dash(argv[idx + 1]))
             *option->storage = argv[++idx];
           else
-            error_exit(program_name, "Missing option value for --%s",
-                       option->long_name);
+            cl_error_exit(program_name, "Missing option value for --%s",
+                          option->long_name);
         } else {
           assert(option->type == CL_FLAG &&
                  "Option with no value isn't a valid flag");
-          *option->storage = set_constant;
+          *option->storage = cl_set_constant;
         }
       }
-    } else if (is_short_opt(argv[idx])) {
+    } else if (cl_is_short_opt(argv[idx])) {
       const char *options = argv[idx] + 1;
       size_t len = strlen(argv[idx]);
       size_t opt_idx = idx;
       /* Handle potentially grouped short options */
       while (options < argv[opt_idx] + len) {
-        const cl_opt *option = get_short_option(desc, options);
+        const cl_opt *option = cl_get_short_option(desc, options);
         if (!option)
-          error_exit(program_name, "Unknown option %s", argv[idx]);
+          cl_error_exit(program_name, "Unknown option %s", argv[idx]);
         options += strlen(option->short_name);
         if (option->type == CL_VALUE) {
           if (options != argv[idx] + len) {
             /* Option and argument are grouped */
             *option->storage = options;
             break;
-          }
-          else if (idx + 1 < argc && !is_dash_dash(argv[idx + 1]))
+          } else if (idx + 1 < argc && !cl_is_dash_dash(argv[idx + 1]))
             *option->storage = argv[++idx];
           else
-            error_exit(program_name, "Missing option value for -%s",
-                       option->short_name);
+            cl_error_exit(program_name, "Missing option value for -%s",
+                          option->short_name);
         } else {
           assert(option->type == CL_FLAG &&
                  "Option with no value isn't a valid flag");
-          *option->storage = set_constant;
+          *option->storage = cl_set_constant;
         }
       }
     } else
@@ -220,7 +219,7 @@ void cl_parse(int argc, char **restrict argv, const cl_interface_desc *desc) {
   }
 
   if (argc - idx != (int)desc->num_positional_args)
-    error_exit(program_name, "Unexpected number of arguments");
+    cl_error_exit(program_name, "Unexpected number of arguments");
 
   /* From here on, there should only be positional arguments */
   for (int arg = 0; arg < argc - idx; ++arg)
