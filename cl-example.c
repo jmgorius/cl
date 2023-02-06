@@ -9,14 +9,14 @@ int main(int argc, char *argv[]) {
   const char *output_file = "cloutput.txt";
   const char *uppercase = 0;
 
-  cl_interface_desc desc = {
+  CLInterfaceDesc desc = {
       .program_name = argv[0],
       .help_header = "cl-example - CL library example",
       .help_footer = "This is free and unencumbered software released into the "
                      "public domain.\nFor more information, please visit "
                      "https://github.com/jmgorius/cl.",
       .opts =
-          (cl_opt[]){
+          (CLOpt[]){
               [0] = {.short_name = "o",
                      .long_name = "output",
                      .description = "Output file name",
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
           },
       .num_opts = 2,
       .positional_args =
-          (cl_arg[]){
+          (CLArg[]){
               [0] = {.name = "input-file",
                      .description = "Input file name",
                      .storage = &input_file},

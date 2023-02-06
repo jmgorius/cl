@@ -31,7 +31,7 @@
 
 static const char *cl_set_constant = "set";
 
-static const cl_opt cl_help_opt = {
+static const CLOpt cl_help_opt = {
     .short_name = "h",
     .long_name = "help",
     .description = "Print this help message and exit",
@@ -54,7 +54,7 @@ static void cl_error_exit(const char *restrict program_name,
   exit(1);
 }
 
-static void cl_print_opt(const cl_opt *opt) {
+static void cl_print_opt(const CLOpt *opt) {
   int print_size = 0;
   bool is_value = opt->type == CL_VALUE;
   printf("  %s%s%s%s%s%s%s%s%s %n", opt->short_name ? "-" : " ",
@@ -72,7 +72,7 @@ static void cl_print_opt(const cl_opt *opt) {
   }
 }
 
-void cl_print_help(const cl_interface_desc *desc) {
+void cl_print_help(const CLInterfaceDesc *desc) {
   if (desc->help_header)
     printf("%s\n\n", desc->help_header);
   printf("USAGE: %s", desc->program_name);
@@ -113,9 +113,9 @@ static bool cl_is_long_opt(const char *s) {
   return s[0] == '-' && s[1] == '-' && s[2] != '-' && s[2] != '\0';
 }
 
-static const cl_opt *cl_get_long_option(const cl_interface_desc *desc,
-                                        const char *restrict argv_str,
-                                        const char **restrict value) {
+static const CLOpt *cl_get_long_option(const CLInterfaceDesc *desc,
+                                       const char *restrict argv_str,
+                                       const char **restrict value) {
   for (size_t i = 0; i < desc->num_opts; ++i) {
     if (desc->opts[i].long_name) {
       size_t n = strlen(desc->opts[i].long_name);
@@ -137,8 +137,8 @@ static const cl_opt *cl_get_long_option(const cl_interface_desc *desc,
   return 0;
 }
 
-static const cl_opt *cl_get_short_option(const cl_interface_desc *desc,
-                                         const char *restrict argv_str) {
+static const CLOpt *cl_get_short_option(const CLInterfaceDesc *desc,
+                                        const char *restrict argv_str) {
   for (size_t i = 0; i < desc->num_opts; ++i) {
     if (desc->opts[i].short_name) {
       assert(strlen(desc->opts[i].short_name) == 1);
@@ -155,7 +155,7 @@ static const cl_opt *cl_get_short_option(const cl_interface_desc *desc,
   return 0;
 }
 
-void cl_parse(int argc, char **restrict argv, const cl_interface_desc *desc) {
+void cl_parse(int argc, char **restrict argv, const CLInterfaceDesc *desc) {
   const char *program_name = argv[0];
   /* Ignore the program name */
   int idx = 1;
@@ -166,7 +166,7 @@ void cl_parse(int argc, char **restrict argv, const cl_interface_desc *desc) {
     }
     if (cl_is_long_opt(argv[idx])) {
       const char *value = 0;
-      const cl_opt *option = cl_get_long_option(desc, argv[idx] + 2, &value);
+      const CLOpt *option = cl_get_long_option(desc, argv[idx] + 2, &value);
       if (!option) {
         cl_error_exit(program_name, "Unknown option %s", argv[idx]);
       } else {
@@ -193,7 +193,7 @@ void cl_parse(int argc, char **restrict argv, const cl_interface_desc *desc) {
       size_t opt_idx = idx;
       /* Handle potentially grouped short options */
       while (options < argv[opt_idx] + len) {
-        const cl_opt *option = cl_get_short_option(desc, options);
+        const CLOpt *option = cl_get_short_option(desc, options);
         if (!option)
           cl_error_exit(program_name, "Unknown option %s", argv[idx]);
         options += strlen(option->short_name);

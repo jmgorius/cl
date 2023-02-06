@@ -10,34 +10,39 @@
 #define CL_HELP_ALIGNMENT 24
 #endif
 
-typedef enum cl_type { CL_FLAG, CL_VALUE } cl_type;
+typedef enum CLType { CL_FLAG, CL_VALUE } CLType;
 
-typedef struct cl_opt {
+typedef struct CLOpt CLOpt;
+typedef struct CLArg CLArg;
+
+struct CLOpt {
   const char *short_name;
   const char *long_name;
   const char *description;
   const char *value_name;
-  const char** storage;
-  cl_type type;
-} cl_opt;
+  const char **storage;
+  CLType type;
+};
 
-typedef struct cl_arg {
+struct CLArg {
   const char *name;
   const char *description;
   const char **storage;
-} cl_arg;
+};
 
-typedef struct cl_interface_desc {
+typedef struct CLInterfaceDesc CLInterfaceDesc;
+
+struct CLInterfaceDesc {
   const char *program_name;
-  const cl_opt *opts;
-  const cl_arg *positional_args;
+  const CLOpt *opts;
+  const CLArg *positional_args;
   const char *help_header;
   const char *help_footer;
   size_t num_opts;
   size_t num_positional_args;
-} cl_interface_desc;
+};
 
-void cl_parse(int argc, char **restrict argv, const cl_interface_desc *desc);
-void cl_print_help(const cl_interface_desc *desc);
+void cl_parse(int argc, char **restrict argv, const CLInterfaceDesc *desc);
+void cl_print_help(const CLInterfaceDesc *desc);
 
 #endif /* INCLUDED_CL_H */
