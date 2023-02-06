@@ -29,7 +29,8 @@
 #define STRINGIFY_IMPL(x) #x
 #define STRINGIFY(x) STRINGIFY_IMPL(x)
 
-static const char *cl_set_constant = "set";
+/* Marker value used to signal the presence of a flag option. */
+static const char *cl_flag_present_constant = "flag is present";
 
 static const CLOpt cl_help_opt = {
     .short_name = "h",
@@ -184,7 +185,7 @@ void cl_parse(int argc, char **restrict argv, const CLInterfaceDesc *desc) {
         } else {
           assert(option->type == CL_FLAG &&
                  "Option with no value isn't a valid flag");
-          *option->storage = cl_set_constant;
+          *option->storage = cl_flag_present_constant;
         }
       }
     } else if (cl_is_short_opt(argv[idx])) {
@@ -210,7 +211,7 @@ void cl_parse(int argc, char **restrict argv, const CLInterfaceDesc *desc) {
         } else {
           assert(option->type == CL_FLAG &&
                  "Option with no value isn't a valid flag");
-          *option->storage = cl_set_constant;
+          *option->storage = cl_flag_present_constant;
         }
       }
     } else
