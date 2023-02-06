@@ -76,12 +76,23 @@ static void cl_print_opt(const CLOpt *opt) {
 void cl_print_help(const CLInterfaceDesc *desc) {
   if (desc->help_header)
     printf("%s\n\n", desc->help_header);
+
   printf("USAGE: %s", desc->program_name);
-  if (desc->num_opts > 0)
-    printf(" [options] [--]");
+
+  /* There is always at least one option, the help option. */
+  printf(" [options] [--]");
 
   for (size_t i = 0; i < desc->num_positional_args; ++i)
     printf(" <%s>", desc->positional_args[i].name);
+
+  /* Print out tail arguments. */
+  if (desc->tail_args_count) {
+    if (desc->tail_args_name)
+      printf(" <%s>...", desc->tail_args_name);
+    else
+      printf("...");
+  }
+
   putc('\n', stdout);
 
   if (desc->num_positional_args > 0) {
@@ -223,6 +234,16 @@ void cl_parse(int argc, char **restrict argv, const CLInterfaceDesc *desc) {
     cl_error_exit(program_name, "Unexpected number of arguments");
 
   /* From here on, there should only be positional arguments */
-  for (int arg = 0; arg < argc - idx; ++arg)
+  int arg = 0;
+  for (; arg < argc - idx; ++arg)
     *desc->positional_args[arg].storage = argv[idx + arg];
+
+  /* Handle tail arguments. */
+  if (arg < argc - idx) {
+    if (!desc->tail_args_count)
+      cl_error_exit(program_name, "Unexpected number of arguments");
+
+    *desc->tail_args_storage = &argv[idx];
+    *desc->tail_args_count = argc - idx;
+  }
 }

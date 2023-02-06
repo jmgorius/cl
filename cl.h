@@ -38,6 +38,9 @@ struct CLInterfaceDesc {
   const CLArg *positional_args;
   const char *help_header;
   const char *help_footer;
+  char ***tail_args_storage;
+  int *tail_args_count;
+  const char *tail_args_name;
   size_t num_opts;
   size_t num_positional_args;
 };
