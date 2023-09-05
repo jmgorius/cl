@@ -103,10 +103,10 @@ void cl_print_help(const CLInterfaceDesc *desc) {
              desc->positional_args[i].description);
   }
 
-  if (desc->num_opts > 0) {
-    puts("\nOPTIONS:");
+  puts("\nOPTIONS:");
+  cl_print_opt(&cl_help_opt);
 
-    cl_print_opt(&cl_help_opt);
+  if (desc->num_opts > 0) {
     for (size_t i = 0; i < desc->num_opts; ++i)
       cl_print_opt(&desc->opts[i]);
   }
